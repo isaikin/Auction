@@ -1,0 +1,87 @@
+﻿@{
+    Layout = "~/_Layout.cshtml";
+}
+@using Auction;
+@using Common;
+@if (!User.Identity.IsAuthenticated)
+{
+    Response.SetStatus(HttpStatusCode.Unauthorized);
+    return;
+}
+@if (!User.IsInRole("Admin"))
+{
+    Response.SetStatus(HttpStatusCode.Forbidden);
+    return;
+}
+@{
+    try
+    {
+        IEnumerable<AppUser> users = CommonPl.AppUserLogic.GetAppUser();
+        IEnumerable<Role> roles = CommonPl.RoleBll.GetRole();
+
+        var stringId = Request["idUser"];
+        int id;
+        if (string.IsNullOrWhiteSpace(stringId) || !int.TryParse(stringId, out id))
+        {
+            Response.SetStatus(HttpStatusCode.BadRequest);
+            return;
+        }
+
+        var user = users.FirstOrDefault(n => n.Id == id);
+
+        var userRole = CommonPl.UserRoleBll.GetUserRole(user.Id);
+        roles = roles.Where(a => !userRole.Contains(a.Name));
+        if (user == null)
+        {
+            Response.SetStatus(HttpStatusCode.NotFound);
+            return;
+        }
+
+        if (roles.Count() != 0)
+        {
+            <header class="jumbotron hero-spacer">
+                <p></p>
+            </header>
+            <table class="table table-condensed">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                    </tr>
+                </thead>
+                <tbody class="notes-list">
+                    @foreach (var role in roles)
+                    {
+                        <tr>
+                            <td>
+                                @role.Name
+                            </td>
+                            <td>
+                                <form action="~/AppUser/AddRole" method="post">
+                                    <input type="hidden" name="idRole" value="@role.Id" />
+                                    <input type="hidden" name="idUser" value="@id" />
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="glyphicon glyphicon-plus-sign"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+            </table>
+        }
+        else
+        {
+            <header class="jumbotron hero-spacer">
+                <p></p>
+            </header>
+            <div class="alert alert-danger fade in">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">x</a>
+                <strong>Danger!</strong>All roles are added.
+            </div>
+        }
+    }
+    catch (Exception)
+    {
+        Response.SetStatus(HttpStatusCode.BadRequest);
+    }
+}

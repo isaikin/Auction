@@ -1,0 +1,100 @@
+﻿@if (!User.Identity.IsAuthenticated)
+{
+    Response.SetStatus(HttpStatusCode.Unauthorized);
+    return;
+}
+@{
+    Layout = "~/_Layout.cshtml";
+}
+@using Auction;
+@using Common;
+@if (IsPost)
+{
+    try
+    {
+        var name = Request["name"];
+        var currentRate = Request["currentRate"];
+        var completion = Request["completion"];
+        var file = Request.Files["inputFile"];
+        var text = Request["message"];
+        double price;
+        DateTime date;
+        if (string.IsNullOrEmpty(name) || string.IsNullOrWhiteSpace(name)
+            || !double.TryParse(currentRate, out price) || !DateTime.TryParse(completion, out date))
+        {
+            Response.SetStatus(HttpStatusCode.BadRequest);
+            return;
+        }
+        var idUser = CommonPl.AppUserLogic.GetId(User.Identity.Name);
+        var product = new Common.Product(name, price, date);
+        var idProduct = CommonPl.ProductBll.Add(product);
+        CommonPl.DescriptionProductLogic.Add(idProduct, text);
+        CommonPl.AppUserLogic.AddProduct(idUser, idProduct);
+        if (file.ContentLength != 0)
+        {
+            byte[] imageContent = new byte[file.ContentLength];
+
+            file.InputStream.Read(imageContent, 0, imageContent.Length);
+            var imageFile = new ImageFile
+            {
+                Content = imageContent,
+                ContentType = file.ContentType,
+            };
+            CommonPl.ImagePrLogic.Add(idProduct, imageFile);
+        }
+
+
+    }
+    catch (Exception)
+    {
+        Response.SetStatus(HttpStatusCode.BadRequest);
+    }
+    Response.Redirect("~/index");
+    return;
+}
+else
+{
+    <hr>
+    <div class="container">
+        <form form action="~/Product/Add" method="post" enctype="multipart/form-data" class="well span8">
+            <div class="row">
+                <div class="control-group">
+                    <label for="name">Name*</label>
+                    <div class="controls">
+                        <input required type="text" id="name" name="name" class="span3" placeholder="Name">
+                        <p class="help-block">Name can contain any letters or numbers, without spaces</p>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="price">Starting price*</label>
+                    <div class="controls">
+                        <input required type="text" id="price" name="currentRate" class="span3" placeholder="Starting price">
+                        <p class="help-block">The starting price in dollars</p>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="date">End date of the auction*</label>
+                    <div class="controls">
+                        <input required type="datetime-local" class="span3" placeholder="" id="date" name="completion">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="inputFile">File</label>
+                    <div class="controls">
+                        <input type="file" accept="image/jpeg" name="inputFile" id="inputFile" />
+                        <p class="help-block">Please select an icon or a standard is selected</p>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="message">Description*</label>
+                    <div class="controls">
+                        <textarea required name="message" id="message" class="input-xlarge span5" rows="10"></textarea>
+                        <p class="help-block">Enter the description of the lot</p>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary pull-right">Add</button>
+            </div>
+        </form>
+    </div>
+    <hr>
+}

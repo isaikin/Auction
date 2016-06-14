@@ -1,0 +1,93 @@
+﻿@{
+    Layout = "~/_Layout.cshtml";
+}
+@using Auction;
+@if (IsPost)
+{
+    try
+    {
+        var login = Request["Login"];
+        var password = Request["Password"];
+        var passwordConfirm = Request["PasswordConfirm"];
+
+        if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password) ||
+            string.IsNullOrWhiteSpace(passwordConfirm) || password != passwordConfirm)
+        {
+            Response.SetStatus(HttpStatusCode.BadRequest);
+            return;
+        }
+
+        if (!CommonPl.AppUserLogic.CheckLogin(login))
+        {
+            <div class="alert alert-danger fade in">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">X</a>
+                <strong>Danger!</strong>The user with the same name exists.
+            </div>
+
+        }
+        else
+        {
+
+            CommonPl.AppUserLogic.Add(login, password);
+            if (CommonPl.AppUserLogic.CheckPassword(login, password))
+            {
+                FormsAuthentication.SetAuthCookie(login, createPersistentCookie: false);
+
+                var returnUrl = Request["ReturnUrl"];
+                if (string.IsNullOrWhiteSpace(returnUrl))
+                {
+                    returnUrl = "~";
+                }
+                Response.Redirect(returnUrl);
+                return;
+            }
+            Response.Redirect("~/index");
+            return;
+        }
+
+    }
+    catch (Exception)
+    {
+        Response.SetStatus(HttpStatusCode.BadRequest);
+    }
+}
+
+<div class="container">
+    <form action="~/Registration.cshtml" method="post" enctype="multipart/form-data" class="form-horizontal">
+
+        <fieldset>
+            <div id="legend">
+                <legend class="">Registration</legend>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="Login">Login</label>
+                <div class="controls">
+                    <input type="text" id="Login" name="Login" placeholder="" class="input-xlarge">
+                    <p class="help-block">Login name can contain any letters or numbers, without spaces</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="Password">Password</label>
+                <div class="controls">
+                    <input type="password" id="Password" name="Password" placeholder="" class="input-xlarge">
+                    <p class="help-block">Password name can contain any letters or numbers, without spaces</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="patronymic">PasswordConfirm</label>
+                <div class="controls">
+                    <input type="password" id="PasswordConfirm" name="PasswordConfirm" placeholder="" class="input-xlarge">
+                    <p class="help-block"></p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="controls">
+                    <button class="btn btn-success ">Registration</button>
+                </div>
+            </div>
+        </fieldset>
+    </form>
+</div>

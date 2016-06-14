@@ -1,0 +1,96 @@
+﻿@{
+    Layout = "~/_Layout.cshtml";
+}
+@using Auction;
+@using Common;
+@if (!User.Identity.IsAuthenticated)
+{
+    Response.SetStatus(HttpStatusCode.Unauthorized);
+    return;
+}
+
+@if (!User.IsInRole("admin"))
+{
+    Response.SetStatus(HttpStatusCode.Forbidden);
+    return;
+}
+
+@if (IsPost)
+{
+    try
+    {
+        var role = Request["idRole"];
+        var stringIdUser = Request["idUser"];
+        int idUser;
+        int idRole;
+        var a = Request.UserAgent;
+
+        if (string.IsNullOrWhiteSpace(stringIdUser) ||
+            !int.TryParse(stringIdUser, out idUser) ||
+            !int.TryParse(role, out idRole))
+        {
+            Response.SetStatus(HttpStatusCode.BadRequest);
+            return;
+        }
+
+        IEnumerable<Role> roles = CommonPl.RoleBll.GetRole();
+
+        var roleExist = roles.FirstOrDefault(n => n.Id == idRole);
+
+        if (roleExist == null)
+        {
+            Response.SetStatus(HttpStatusCode.NotFound);
+            return;
+        }
+
+        CommonPl.UserRoleBll.DeleteUserRole(idUser, idRole);
+
+        Response.Redirect("~/AppUser/DeleteRole");
+    }
+    catch (Exception)
+    {
+        Response.SetStatus(HttpStatusCode.BadRequest);
+    }
+    return;
+
+}
+else
+{
+
+    try
+    {
+        IEnumerable<AppUser> users = CommonPl.AppUserLogic.GetAppUser();
+
+        <header class="jumbotron hero-spacer">
+            <p></p>
+        </header>
+        <table class="table table-condensed">
+            <thead>
+                <tr>
+                    <th>Users</th>
+                </tr>
+            </thead>
+            <tbody class="notes-list">
+                @foreach (var user in users)
+                {
+                    <tr>
+                        <td>
+                            @user.Login
+                        </td>
+                        <td>
+                            <form action="~/AppUser/SelectDeleteRole" method="post">
+                                <input type="hidden" name="idUser" value="@user.Id" />
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="glyphicon glyphicon-minus-sign"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+        </table>
+    }
+    catch (Exception)
+    {
+        Response.SetStatus(HttpStatusCode.BadRequest);
+    }
+}

@@ -1,0 +1,94 @@
+﻿@{
+    Layout = "~/_Layout.cshtml";
+}
+@using Auction;
+@using Common;
+@if (!User.Identity.IsAuthenticated)
+{
+    Response.SetStatus(HttpStatusCode.Unauthorized);
+    return;
+}
+
+@if (!User.IsInRole("admin"))
+{
+    Response.SetStatus(HttpStatusCode.Forbidden);
+    return;
+}
+
+@if (IsPost)
+{
+    try
+    {
+        var role = Request["idRole"];
+        var stringIdUser = Request["idUser"];
+        int idUser;
+        int idRole;
+        if (!int.TryParse(role, out idRole) ||
+            string.IsNullOrWhiteSpace(stringIdUser) || !int.TryParse(stringIdUser, out idUser))
+        {
+            Response.SetStatus(HttpStatusCode.BadRequest);
+            return;
+        }
+
+        IEnumerable<Role> roles = CommonPl.RoleBll.GetRole();
+
+        var temprole = roles.FirstOrDefault(n => n.Id == idRole);
+
+        var userRoles = CommonPl.UserRoleBll.GetUserRole(CommonPl.AppUserLogic.GetAppUser().FirstOrDefault(n => n.Id == idUser).Id);
+
+        if (temprole == null)
+        {
+            Response.SetStatus(HttpStatusCode.NotFound);
+            return;
+        }
+
+        CommonPl.UserRoleBll.AddUserRole(idUser, temprole.Id);
+
+        Response.Redirect("~/AppUser/AddRole");
+        return;
+
+    }
+    catch (Exception)
+    {
+        Response.SetStatus(HttpStatusCode.BadRequest);
+    }
+}
+else
+{
+    try
+    {
+        IEnumerable<AppUser> users = CommonPl.AppUserLogic.GetAppUser();
+
+        <header class="jumbotron hero-spacer">
+            <p></p>
+        </header>
+        <table class="table table-condensed">
+            <thead>
+                <tr>
+                    <th>Users</th>
+                </tr>
+            </thead>
+            <tbody class="notes-list">
+                @foreach (var user in users)
+                {
+                    <tr>
+                        <td>
+                            @user.Login
+                        </td>
+                        <td>
+                            <form action="~/AppUser/SelectRole" method="post">
+                                <input type="hidden" name="idUser" value="@user.Id" />
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="glyphicon glyphicon-plus-sign"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+        </table>
+    }
+    catch (Exception)
+    {
+        Response.SetStatus(HttpStatusCode.BadRequest);
+    }
+}

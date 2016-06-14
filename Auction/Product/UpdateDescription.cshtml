@@ -1,0 +1,31 @@
+﻿@using Auction;
+@if (IsPost)
+{
+    Layout = "~/_Layout.cshtml";
+    try
+    {
+        int id;
+        int idUser;
+        var description = Request["message"];
+        if (!int.TryParse(Request["idUser"], out idUser) ||
+            !int.TryParse(Request["idProduct"], out id) ||
+               string.IsNullOrWhiteSpace(description) ||
+             string.IsNullOrEmpty(description))
+        {
+            Response.SetStatus(HttpStatusCode.BadRequest);
+            return;
+        }
+
+        CommonPl.DescriptionProductLogic.Update(idUser, id, description);
+
+    }
+    catch (Exception)
+    {
+        Response.SetStatus(HttpStatusCode.BadRequest);
+    }
+    Response.Redirect("~/index");
+}
+else
+{
+    Response.SetStatus(HttpStatusCode.NotFound);
+}

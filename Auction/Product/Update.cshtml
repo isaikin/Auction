@@ -1,0 +1,51 @@
+﻿@using Auction
+@if (IsPost)
+{
+
+    Layout = "~/_Layout.cshtml";
+    try
+    {
+        int id = int.Parse(Request["id"]);
+        int iduser;
+
+        if (!int.TryParse(CommonPl.AppUserLogic.GetId(User.Identity.Name).ToString(), out iduser) ||
+             !int.TryParse(Request["id"], out id))
+        {
+            Response.SetStatus(HttpStatusCode.BadRequest);
+            return;
+        }
+
+        <header class="text-description">
+            <p></p>
+        </header>
+        <div class="thumbnail">
+            <div class="class=" text-description text-left text-info">
+
+                <form form action="~/Product/UpdateDescription" method="post" enctype="multipart/form-data" class="well span8">
+                    <img src="~/View?id=@id" class="image">
+                    <div class="control-group">
+
+                        <label for="message">Description</label>
+                        <div class="controls">
+                            <textarea required name="message" id="message" placeholder="@CommonPl.DescriptionProductLogic.Get(id)" class="input-xlarge span5" rows="10"></textarea>
+                            <input type="hidden" name="idUser" value="@iduser" />
+                            <input type="hidden" name="idProduct" value="@id" />
+                            <p class="help-block">Enter the description of the lot</p>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Сhange</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+    catch (Exception)
+    {
+        Response.SetStatus(HttpStatusCode.BadRequest);
+    }
+}
+else
+{
+    Response.SetStatus(HttpStatusCode.BadRequest);
+
+    return;
+}

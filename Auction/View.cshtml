@@ -1,0 +1,31 @@
+﻿@using Auction;
+@using Common;
+@{
+    try
+    {
+        var stringId = Request["id"];
+        int id;
+        if (string.IsNullOrWhiteSpace(stringId) || !int.TryParse(stringId, out id))
+        {
+            Response.SetStatus(HttpStatusCode.BadRequest);
+            return;
+        }
+
+        var image = CommonPl.ImagePrLogic.GetById(id);
+        if (image == null)
+        {
+            using (BinaryReader reader = new BinaryReader(File.Open(Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Content", "image", "emptyreview.png"), FileMode.Open)))
+            {
+                byte[] imageContent = reader.ReadBytes((int)reader.BaseStream.Length);
+                Response.WriteBinary(imageContent, "image/png");
+                return;
+            }
+        }
+
+        Response.WriteBinary(image.Content, image.ContentType);
+    }
+    catch (Exception)
+    {
+        Response.SetStatus(HttpStatusCode.BadRequest);
+    }
+}

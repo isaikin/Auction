@@ -1,0 +1,137 @@
+﻿@using Common;
+@using Auction;
+@{
+    Layout = "~/_Layout.cshtml";
+    try
+    {
+        var id_user = CommonPl.AppUserLogic.GetId(User.Identity.Name);
+        IEnumerable<Product> acviveprod = CommonPl.RateBll.GetUserLotsActive(id_user);
+        IEnumerable<Product> finishprod = CommonPl.RateBll.GetUserLotsFinish(id_user);
+
+        <div class="container">
+            <link href="~/Content/timer.css" rel="stylesheet" />
+            <header class="jumbotron hero-spacer">
+                <h1>Auction</h1>
+                <p>Online Auction</p>
+                <p>
+                    <a class="btn btn-primary btn-large">Call to action!</a>
+                </p>
+            </header>
+            <hr>
+            <div class="row">
+                <div class="col-lg-12">
+                    <h3>Lots active</h3>
+                </div>
+            </div>
+            <div class="row text-center">
+                @if (acviveprod.Count() != 0)
+                {
+                    foreach (var item in acviveprod)
+                    {
+                        <div class="col-md-3 col-sm-6 hero-feature ">
+                            <div class="thumbnail">
+                                <div>
+                                    <h3>@item.Name</h3>
+                                    <img src="~/View?id=@item.Id" class="image">
+                                    <form action="~/Product/Description" method="post" class="form-horizontal">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button type="submit" class="btn btn-default">More Info</button>
+                                    </form>
+                                    <div class="content">
+                                        @{
+                                            var date = (item.Completion - DateTime.Now);
+                                            <div class="second-my timerhello timerhello_391">
+                                                <div class="second-my-content">
+                                                    <p class="titloftimer price">Before the end:</p>
+                                                    <br>
+                                                    <p class="result">
+                                                        <span class="result-day items">@date.Days</span>
+                                                        <span class="dot">дн.&nbsp;</span>
+                                                        <span class="result-hour items">@date.Hours</span>
+                                                        <span class="dot">:</span>
+                                                        <span class="result-minute items">@date.Minutes</span>
+                                                        <span class="dot">:</span>
+                                                        <span class="result-second items">@date.Seconds</span>
+                                                    </p>
+                                                    <div class="clearf"></div>
+                                                </div>
+                                            </div>
+
+                                        }
+                                    </div>
+                                </div>
+                                <div class="content">
+
+                                    @if (!User.Identity.IsAuthenticated)
+                                    {
+                                        <h4>Сurrent rate</h4>
+                                        <span class="badge price">@item.CurrentRate $</span>
+
+                                    }
+                                    else
+                                    {
+
+                                        <form action="~/Rate/Add" method="post" class="form-horizontal">
+                                            <div class="form-group">
+                                                <label for="currentrate" class="control-label">Сurrent rate </label>
+                                                <input type="text" value="@item.CurrentRate $" name="rate" class="span3" id="currentrate" />
+                                                <input type="hidden" value="@item.Id" name="id" />
+                                                <input type="hidden" name="curratenRate" value="@item.CurrentRate" />
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Increase bid</button>
+                                        </form>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span>Not active lots</span>
+                                            }
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <h3>Finished lots</h3>
+                </div>
+            </div>
+            <div class="row text-center">
+                @if (finishprod.Count() != 0)
+                {
+                    foreach (var item in finishprod)
+                    {
+                        <div class="col-md-3 col-sm-6 hero-feature ">
+                            <div class="thumbnail">
+                                <div>
+                                    <h3>@item.Name</h3>
+                                    <img src="~/View?id=@item.Id" class="image">
+                                </div>
+                                <div class="content">
+                                    <p class="price">Rate</p>
+                                    <span class="badge price">@item.CurrentRate $</span>
+                                </div>
+                                <div>
+                                    <form action="~/Product/Description" method="post" class="form-horizontal">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="curratenRate" value="@item.CurrentRate" />
+                                        <button type="submit" class="btn btn-default">More Info</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <span>Not finish lots</span>
+                }
+            </div>
+        </div>
+                                            }
+                                            catch (Exception)
+                                            {
+                                                Response.SetStatus(HttpStatusCode.BadRequest);
+                                            }
+
+}

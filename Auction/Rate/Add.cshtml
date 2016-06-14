@@ -1,0 +1,42 @@
+﻿@using Auction;
+@if (!User.Identity.IsAuthenticated)
+{
+    Response.SetStatus(HttpStatusCode.Unauthorized);
+    return;
+}
+@{
+    Layout = "~/_Layout.cshtml";
+}
+@if (IsPost)
+{
+    try
+    {
+        var id_user = CommonPl.AppUserLogic.GetId(User.Identity.Name);
+        var id_product = Request["id"];
+        var rate = Request["rate"];
+
+        double newRate;
+        double currentRate;
+        int product;
+
+        if (!double.TryParse(Request["curratenRate"], out currentRate) || !double.TryParse(rate.Split(' ').First(), out newRate)
+            || !int.TryParse(id_product, out product) || currentRate > newRate)
+        {
+            Response.SetStatus(HttpStatusCode.BadRequest);
+            return;
+        }
+        CommonPl.ProductBll.UpdateRate(product, newRate);
+        CommonPl.RateBll.Add(id_user, product, newRate);
+
+        Response.Redirect("~/index");
+        return;
+    }
+    catch (Exception)
+    {
+        Response.SetStatus(HttpStatusCode.BadRequest);
+    }
+}
+else
+{
+    Response.SetStatus(HttpStatusCode.NotFound);
+}

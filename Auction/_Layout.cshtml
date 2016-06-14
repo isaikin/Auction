@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title></title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap.css" rel="stylesheet" />
+    <link href="~/Content/timer.css" rel="stylesheet" />
+</head>
+<body>
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <span class="navbar-brand">@User.Identity.Name</span>
+                    <a class="navbar-brand" href="~/Logout">Logout</a>
+                }
+                else
+                {
+                    <a class="navbar-brand" href="~/login">Login</a>
+                }
+                <a class="navbar-brand" href="~/Index">Home</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    @if (!User.Identity.IsAuthenticated)
+                    {
+                        <li><a href="~/Registration">Registration</a></li>
+
+                    }
+                    else
+                    {
+                        <li>
+                            <a href="~/Product/Add">Add lots</a>
+                        </li>
+                        <li>
+                            <a href="~/AppUser/myLots">My lots</a>
+                        </li>
+                        <li>
+                            <a href="~/AppUser/MyRate">My Rate</a>
+                        </li>
+
+                    }
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Role <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="~/AppUser/AddRole">Add</a></li>
+                                <li><a href="~/AppUser/DeleteRole">Delete</a></li>
+                            </ul>
+                        </li>
+                    }
+                    <li>
+                        <form action="~/Seach" method="post" class="navbar-form navbar-left" role="search">
+                            <div class="form-group">
+                                <input type="text" name="name" class="form-control" placeholder="Search">
+                            </div>
+                            <button type="submit" class="btn btn-default">Seach</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    @RenderBody()
+    <hr>
+    <footer>
+        <div class="row">
+            <div class="col-lg-12">
+                <p class="text-center">Copyright &copy;</p>
+            </div>
+        </div>
+    </footer>
+    <script src="~/scripts/jquery-1.9.1.js"></script>
+    <script src="~/scripts/bootstrap.js"></script>
+    <script src="~/scripts/timer.js"></script>
+</body>
+</html>

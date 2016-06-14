@@ -1,0 +1,34 @@
+﻿@using Auction
+@if (IsPost)
+{
+    Layout = "~/_Layout.cshtml";
+
+    try
+    {
+
+        int id;
+        if (int.TryParse(Request["id"], out id))
+        {
+            Response.SetStatus(HttpStatusCode.BadRequest);
+        }
+
+        <header class="text-description">
+            <p></p>
+        </header>
+        <div class="thumbnail">
+            <p class="class=" text-description text-left text-info">
+                <img src="~/View?id=@id" class="image">
+                @CommonPl.DescriptionProductLogic.Get(id)
+            </p>
+        </div>
+    }
+    catch (Exception)
+    {
+        Response.SetStatus(HttpStatusCode.BadRequest);
+    }
+}
+else
+{
+    Response.SetStatus(HttpStatusCode.NotFound);
+    return;
+}

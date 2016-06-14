@@ -1,0 +1,70 @@
+﻿@{
+    Layout = "~/_Layout.cshtml";
+}
+@using Auction;
+@using Common;
+@if (!User.Identity.IsAuthenticated)
+{
+    Response.SetStatus(HttpStatusCode.Unauthorized);
+    return;
+}
+@if (!User.IsInRole("Admin"))
+{
+    Response.SetStatus(HttpStatusCode.Forbidden);
+    return;
+}
+@{
+    try
+    {
+        IEnumerable<AppUser> users = CommonPl.AppUserLogic.GetAppUser();
+
+        var stringId = Request["idUser"];
+        int id;
+        if (string.IsNullOrWhiteSpace(stringId) || !int.TryParse(stringId, out id))
+        {
+            Response.SetStatus(HttpStatusCode.BadRequest);
+            return;
+        }
+
+        var user = users.FirstOrDefault(n => n.Id == id);
+        IEnumerable<Role> roles = CommonPl.UserRoleBll.GetUserRoleFull(id);
+        if (user == null)
+        {
+            Response.SetStatus(HttpStatusCode.NotFound);
+            return;
+        }
+
+        <header class="jumbotron hero-spacer">
+            <p></p>
+        </header>
+        <table class="table table-condensed">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            <tbody class="notes-list">
+                @foreach (var role in roles)
+                {
+                    <tr>
+                        <td>
+                            @role.Name
+                        </td>
+                        <td>
+                            <form action="~/AppUser/DeleteRole" method="post">
+                                <input type="hidden" name="idRole" value="@role.Id" />
+                                <input type="hidden" name="idUser" value="@id" />
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="glyphicon glyphicon-minus-sign"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+        </table>
+    }
+    catch (Exception)
+    {
+        Response.SetStatus(HttpStatusCode.BadRequest);
+    }
+}
