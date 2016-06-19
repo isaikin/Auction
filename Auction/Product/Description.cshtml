@@ -7,7 +7,7 @@
     {
 
         int id;
-        if (int.TryParse(Request["id"], out id))
+        if (!int.TryParse(Request["id"], out id))
         {
             Response.SetStatus(HttpStatusCode.BadRequest);
         }
